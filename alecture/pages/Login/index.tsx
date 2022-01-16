@@ -1,56 +1,45 @@
 import useInput from '@hooks/useInput';
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from '@pages/SignUp/styles';
-import { IUser } from '@typings/db';
 import fetcher from '@utils/fetcher';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import React, { useCallback, useState } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import useSWR from 'swr';
 
 const LogIn = () => {
-  const queryClient = useQueryClient();
-  const { isLoading, isSuccess, status, isError, data, error } = useQuery('user', () =>
-    fetcher({ queryKey: '/api/users' }),
-  );
-  // const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher);
-  const mutation = useMutation<IUser, AxiosError, { email: string; password: string }>(
-    'user',
-    (data) =>
-      axios
-        .post('/api/users/login', data, {
-          withCredentials: true,
-        })
-        .then((response) => response.data),
-    {
-      onMutate() {
-        setLogInError(false);
-      },
-      onSuccess() {
-        queryClient.refetchQueries('user');
-      },
-      onError(error) {
-        setLogInError(error.response?.data?.code === 401);
-      },
-    },
-  );
-
+  const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher);
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
   const onSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      mutation.mutate({ email, password });
+      setLogInError(false);
+      axios
+        .post(
+          '/api/users/login',
+          { email, password },
+          {
+            withCredentials: true,
+          },
+        )
+        .then((response) => {
+          mutate(response.data);
+          revalidate();
+        })
+        .catch((error) => {
+          setLogInError(error.response?.data?.statusCode === 401);
+        });
     },
-    [email, password, mutation],
+    [email, password],
   );
 
-  if (isLoading) {
+  if (data === undefined) {
     return <div>로딩중...</div>;
   }
 
   if (data) {
-    return <Redirect to="/workspace/sleact/channel/일반" />;
+    return <Redirect to="/workspace/channel/" />;
   }
 
   // console.log(error, userData);

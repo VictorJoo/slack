@@ -1,13 +1,13 @@
 import useInput from '@hooks/useInput';
-import fetcher from '@utils/fetcher';
 import React, { useCallback, useState, VFC } from 'react';
 import axios from 'axios';
 import useSWR from 'swr';
-import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
+import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from '@pages/SignUp/styles';
 import { Link, Redirect } from 'react-router-dom';
+import fetcher from '@utils/fetcher';
 
 const SignUp = () => {
-  const { data, error, revalidate } = useSWR('/api/users', fetcher);
+  const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher);
 
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
@@ -48,6 +48,7 @@ const SignUp = () => {
           })
           .then((response) => {
             console.log(response);
+            revalidate();
             setSignUpSuccess(true);
           })
           .catch((error) => {

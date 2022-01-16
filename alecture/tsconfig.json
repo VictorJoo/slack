@@ -17,6 +17,7 @@
       "@pages/*": ["pages/*"],
       "@utils/*": ["utils/*"],
       "@typings/*": ["typings/*"]
-    }
+    },
+    "forceConsistentCasingInFileNames": false
   }
 }
