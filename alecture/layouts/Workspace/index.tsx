@@ -28,8 +28,8 @@ const Workspace: FC = ({ children }) => {
       .post('/api/users/logout', null, {
         withCredentials: true,
       })
-      .then((response) => {
-        mutate(response.data, false);
+      .then(() => {
+        mutate(false, false);
       });
   }, []);
 
